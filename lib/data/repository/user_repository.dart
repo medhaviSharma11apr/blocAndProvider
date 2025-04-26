@@ -1,4 +1,4 @@
-import 'package:blocandprov/data/Model/userModel.dart'; // Corrected casing here
+import 'package:blocandprov/data/model/userModel.dart'; // Corrected casing here
 import 'package:blocandprov/data/provider/user_provider.dart';
 import 'package:flutter/material.dart'; // Added missing import for BuildContext
 

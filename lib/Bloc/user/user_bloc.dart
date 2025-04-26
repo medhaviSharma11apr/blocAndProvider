@@ -3,7 +3,7 @@ import 'package:blocandprov/Bloc/user/user_state.dart';
 import 'package:blocandprov/data/repository/user_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:blocandprov/data/model/userModel.dart';
+
 
 
 

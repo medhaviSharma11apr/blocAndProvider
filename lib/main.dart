@@ -1,6 +1,15 @@
+import 'package:blocandprov/Bloc/blocObserver.dart';
+import 'package:blocandprov/data/provider/user_provider.dart';
+import 'package:blocandprov/data/repository/user_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'Bloc/user/user_bloc.dart';
+import 'Bloc/user/user_event.dart';
+import 'Bloc/user/user_state.dart';
+import 'data/model/userModel.dart';
 
 void main() {
+  Bloc.observer = SimpleBlocObserver();
   runApp(const MyApp());
 }
 
@@ -10,13 +19,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(),
-    );
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: RepositoryProvider(
+          create: ((context) => UserRepository(UserProvider())),
+          child: BlocProvider(
+            create: (context) => UserBloc(context.read<UserRepository>()),
+            child: const MyHomePage(),
+          ),
+        ));
   }
 }
 
@@ -37,9 +51,51 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text("Repository Provider"),
       ),
-      body: const SizedBox(),
+      body: BlocBuilder<UserBloc, UserState>(
+        builder: (context, state) {
+          if (state is UserLoadingState) {
+            return const Center(
+              child: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          if (state is UserErrorState) {
+            return Center(
+              child: Center(child: Text('Error${state.error}')),
+            );
+          }
+
+          if (state is UserSuccessState) {
+            List<Datum> data = state.user.data;
+
+            return data.isEmpty
+                ? const Center(child: Text("No Data Founf"))
+                : ListView.builder(
+                    itemCount: data.length,
+                    itemBuilder: ((context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 8),
+                        child: Card(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage: NetworkImage(data[index].avatar),
+                            ),
+                            title: Text(data[index].firstName),
+                            subtitle: Text(data[index].email),
+                            trailing: const Icon(Icons.more_vert),
+                          ),
+                        ),
+                      );
+                    }));
+          }
+          return const Text('b');
+        },
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: (() {}),
+        onPressed: (() {
+          context.read<UserBloc>().add(LoadUserEvent());
+        }),
         tooltip: 'Refresh',
         child: const Icon(Icons.refresh),
       ),
